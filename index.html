@@ -17,7 +17,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   
   <style>
-    /* Estilos globales y comportamiento táctil móvil */
     body {
       background-color: #090d16;
       color: #f1f5f9;
@@ -26,14 +25,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Glows y sombras neón en naranja */
-    .border-orange-glow {
-      border-color: #ea580c;
-      box-shadow: 0 0 15px rgba(234, 88, 12, 0.3);
-    }
-
     .btn-orange-glow {
-      background: linear-[#ea580c];
       background-image: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
       box-shadow: 0 4px 20px rgba(234, 88, 12, 0.4);
     }
@@ -43,7 +35,6 @@
       box-shadow: 0 2px 10px rgba(234, 88, 12, 0.6);
     }
 
-    /* Ocultar barra de desplazamiento manteniendo scroll funcional */
     textarea::-webkit-scrollbar {
       width: 6px;
     }
@@ -62,12 +53,12 @@
     </h1>
   </header>
 
-  <!-- Contenedor Principal de la Ruleta y Formulario -->
+  <!-- Contenedor Principal -->
   <main class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center my-auto">
     
     <!-- Sección Visual de la Ruleta -->
     <div class="flex flex-col items-center justify-center relative order-1 lg:order-2">
-      <!-- Indicador superior naranja neón con sombra -->
+      <!-- Indicador superior naranja -->
       <div class="w-0 h-0 border-l-[18px] border-l-transparent border-r-[18px] border-r-transparent border-t-[30px] border-t-orange-500 absolute -top-4 z-20 filter drop-shadow-[0_4px_8px_rgba(234,88,12,0.8)]"></div>
       
       <!-- Canvas de la Ruleta -->
@@ -78,31 +69,45 @@
 
     <!-- Sección Controles e Ingreso de Datos -->
     <div class="flex flex-col gap-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl order-2 lg:order-1">
-      <div>
-        <label for="namesInput" class="block text-sm font-semibold text-orange-400 mb-2">
-          Editar participantes (uno por línea):
+      
+      <div class="flex items-center justify-between">
+        <label for="namesInput" class="text-sm font-semibold text-orange-400">
+          Participantes (uno por línea):
         </label>
-        <textarea id="namesInput" rows="5" class="w-full p-3 bg-slate-950/80 border border-slate-700/80 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none text-base transition-all" placeholder="Escribe aquí los nombres..."></textarea>
+        <!-- Botón para Limpiar Lista -->
+        <button id="clearBtn" class="text-xs text-slate-400 hover:text-orange-400 underline transition-colors focus:outline-none">
+          Limpiar lista
+        </button>
       </div>
 
-      <!-- Control de eliminación de participante sorteado -->
-      <label class="flex items-center gap-3 p-2 rounded-lg bg-slate-950/50 border border-slate-800/80 cursor-pointer text-sm text-slate-300">
-        <input type="checkbox" id="removeWinnerCheck" checked class="w-5 h-5 accent-orange-500 rounded cursor-pointer">
-        <span>Eliminar <strong>participante sorteado</strong> automáticamente</span>
-      </label>
+      <textarea id="namesInput" rows="5" class="w-full p-3 bg-slate-950/80 border border-slate-700/80 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none text-base transition-all" placeholder="Escribe aquí los nombres..."></textarea>
+
+      <!-- Opciones / Interruptores -->
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-3 p-2 rounded-lg bg-slate-950/50 border border-slate-800/80 cursor-pointer text-sm text-slate-300">
+          <input type="checkbox" id="removeWinnerCheck" checked class="w-5 h-5 accent-orange-500 rounded cursor-pointer">
+          <span>Eliminar <strong>participante sorteado</strong> automáticamente</span>
+        </label>
+
+        <!-- Conmutador para Sonido -->
+        <label class="flex items-center gap-3 p-2 rounded-lg bg-slate-950/50 border border-slate-800/80 cursor-pointer text-sm text-slate-300">
+          <input type="checkbox" id="soundCheck" checked class="w-5 h-5 accent-orange-500 rounded cursor-pointer">
+          <span>Efectos de sonido activos</span>
+        </label>
+      </div>
 
       <!-- Botón de Giro Táctil -->
       <button id="spinBtn" class="w-full py-4 text-lg font-bold text-white rounded-xl btn-orange-glow transition-all duration-150 flex items-center justify-center gap-2">
         <span>¡Girar Ruleta!</span>
       </button>
 
-      <!-- Indicador de estado en pantalla -->
+      <!-- Indicador de Estado -->
       <div id="result" class="text-center text-base sm:text-lg font-semibold text-orange-400 min-h-[1.75rem] py-1"></div>
     </div>
 
   </main>
 
-  <!-- Modal / Banner del Participante Sorteado -->
+  <!-- Modal del Participante Sorteado -->
   <div id="winnerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
     <div class="bg-slate-900 border-2 border-orange-500 rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center shadow-[0_0_40px_rgba(234,88,12,0.4)] transform scale-95 transition-transform duration-300" id="modalCard">
       <div class="text-4xl mb-2">🎉</div>
@@ -119,30 +124,29 @@
   </footer>
 
   <script>
-    // Configuración del canvas y elementos DOM
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
     const namesInput = document.getElementById('namesInput');
     const spinBtn = document.getElementById('spinBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const resultDiv = document.getElementById('result');
     const removeWinnerCheck = document.getElementById('removeWinnerCheck');
+    const soundCheck = document.getElementById('soundCheck');
 
     const winnerModal = document.getElementById('winnerModal');
     const modalCard = document.getElementById('modalCard');
     const winnerNameElem = document.getElementById('winnerName');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    // Nombres por defecto iniciales
-    namesInput.value = "Lando\nGeorge\nCharles\nMax\nPierre\nAntonio R";
+    namesInput.value = "Lando\nGeorge\nCharles\nMax\nPierre\nAntonio";
 
-    // Colores elegantes en contraste con bordes e indicador naranja
     const sliceColors = [
-      '#1e293b', // Slate oscuro
-      '#1e1b4b', // Índigo profundo
-      '#0f172a', // Azul noche
-      '#2a1205', // Terracota oscuro
-      '#111827', // Gris carbón
-      '#31101e'  // Vino oscuro
+      '#1e293b',
+      '#1e1b4b',
+      '#0f172a',
+      '#2a1205',
+      '#111827',
+      '#31101e'
     ];
 
     let currentAngle = 0;
@@ -150,8 +154,8 @@
     let audioCtx = null;
     let lastSliceIndex = -1;
 
-    // Inicializador del motor de audio sintético (click al pasar casilla)
     function initAudio() {
+      if (!soundCheck.checked) return;
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
@@ -161,7 +165,7 @@
     }
 
     function playClickSound() {
-      if (!audioCtx) return;
+      if (!soundCheck.checked || !audioCtx) return;
       try {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -178,7 +182,7 @@
     }
 
     function playFanfareSound() {
-      if (!audioCtx) return;
+      if (!soundCheck.checked || !audioCtx) return;
       try {
         const notes = [261.63, 329.63, 392.00, 523.25];
         notes.forEach((freq, idx) => {
@@ -232,7 +236,6 @@
         const startAngle = currentAngle + i * sliceAngle;
         const endAngle = startAngle + sliceAngle;
 
-        // Dibujar Sector
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -240,12 +243,10 @@
         ctx.fillStyle = sliceColors[i % sliceColors.length];
         ctx.fill();
 
-        // Separadores en color NARANJA VIBRANTE
         ctx.strokeStyle = '#ea580c';
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Dibujar Texto
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + sliceAngle / 2);
@@ -253,7 +254,6 @@
         ctx.fillStyle = '#f8fafc';
         ctx.font = 'bold 15px system-ui, sans-serif';
         
-        // Truncar textos largos si hay muchas casillas
         let displayName = name;
         if (numOptions > 12 && displayName.length > 10) {
           displayName = displayName.substring(0, 8) + '..';
@@ -263,7 +263,6 @@
         ctx.restore();
       });
 
-      // Círculo Central Naranja Estilizado
       ctx.beginPath();
       ctx.arc(centerX, centerY, 24, 0, 2 * Math.PI);
       ctx.fillStyle = '#090d16';
@@ -348,13 +347,11 @@
       playFanfareSound();
       resultDiv.textContent = `Participante sorteado: ${selectedParticipant}`;
 
-      // Mostrar modal
       winnerNameElem.textContent = selectedParticipant;
       winnerModal.classList.remove('opacity-0', 'pointer-events-none');
       modalCard.classList.remove('scale-95');
       modalCard.classList.add('scale-100');
 
-      // Procesar eliminación si la casilla está activa
       if (removeWinnerCheck.checked) {
         const remainingNames = names.filter((_, index) => index !== winningIndex);
         namesInput.value = remainingNames.join('\n');
@@ -371,11 +368,17 @@
       drawWheel();
     }
 
+    // Evento para limpiar la lista
+    clearBtn.addEventListener('click', () => {
+      namesInput.value = '';
+      resultDiv.textContent = '';
+      drawWheel();
+    });
+
     namesInput.addEventListener('input', drawWheel);
     spinBtn.addEventListener('click', spin);
     closeModalBtn.addEventListener('click', closeModal);
 
-    // Redimensionado dinámico para móviles
     function handleResize() {
       const containerWidth = canvas.parentElement.clientWidth;
       const targetSize = Math.min(containerWidth - 20, 360);
@@ -387,16 +390,13 @@
     }
 
     window.addEventListener('resize', handleResize);
-
-    // Dibujo inicial
     handleResize();
 
-    // Registro del Service Worker PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then((reg) => console.log('Service Worker registrado correctamente.', reg.scope))
-          .catch((err) => console.log('Error registrando Service Worker:', err));
+          .then((reg) => console.log('Service Worker registrado.', reg.scope))
+          .catch((err) => console.log('Error en Service Worker:', err));
       });
     }
   </script>
